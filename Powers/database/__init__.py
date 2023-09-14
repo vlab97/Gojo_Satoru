@@ -21,12 +21,17 @@ class MongoDB:
 
     # Insert one entry into collection
     def insert_one(self, document):
-        result = self.collection.insert_one(document)
+        if isinstance(document, str):
+            document = document.split()
+        result = self.collection.insert_one({"words": document})
         return repr(result.inserted_id)
+
 
     # Find one entry from collection
     def find_one(self, query):
-        result = self.collection.find_one(query)
+        if isinstance(query, str):
+            query = query.split()
+        result = self.collection.find_one({"words": query})
         if result:
             return result
         return False
@@ -35,7 +40,9 @@ class MongoDB:
     def find_all(self, query=None):
         if query is None:
             query = {}
-        return list(self.collection.find(query))
+        elif isinstance(query, str):
+            query = query.split()
+        return list(self.collection.find({"words": {"$all": query}}))
 
     # Count entries from collection
     def count(self, query=None):
@@ -45,21 +52,29 @@ class MongoDB:
 
     # Delete entry/entries from collection
     def delete_one(self, query):
-        self.collection.delete_many(query)
+        if isinstance(query, str):
+            query = query.split()
+        self.collection.delete_many({"words": {"$all": query}})
         return self.collection.count_documents({})
+
+
 
     # Replace one entry in collection
     def replace(self, query, new_data):
-        old = self.collection.find_one(query)
+        if isinstance(query, str):
+            query = query.split()
+        old = self.collection.find_one({"words": query})
         _id = old["_id"]
-        self.collection.replace_one({"_id": _id}, new_data)
+        self.collection.replace_one({"_id": _id}, {"words": new_data})
         new = self.collection.find_one({"_id": _id})
         return old, new
 
     # Update one entry from collection
     def update(self, query, update):
-        result = self.collection.update_one(query, {"$set": update})
-        new_document = self.collection.find_one(query)
+        if isinstance(query, str):
+            query = query.split()
+        result = self.collection.update_one({"words": query}, {"$set": {"words": update}})
+        new_document = self.collection.find_one({"words": query})
         return result.modified_count, new_document
 
     @staticmethod
