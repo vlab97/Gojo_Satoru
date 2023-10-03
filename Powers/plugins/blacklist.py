@@ -39,11 +39,11 @@ async def view_blacklist(_, m: Message):
 async def add_blacklist(_, m: Message):
     db = Blacklist(m.chat.id)
 
-    if len(m.text.split()) < 2:
-        await m.reply_text(text="Пожалуйста, проверьте справку о том, как использовать эту команду.")
+    if len(m.command) < 2:
+        await m.reply_text(text="Пожалуйста, укажите слова для добавления в черный список после команды.")
         return
 
-    bl_words = m.text.split()[1:]
+    bl_words = m.command[1:]
     all_blacklisted = db.get_blacklists()
     already_added_words, rep_text = [], ""
 
