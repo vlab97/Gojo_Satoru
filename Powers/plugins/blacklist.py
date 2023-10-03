@@ -40,28 +40,28 @@ async def add_blacklist(_, m: Message):
     db = Blacklist(m.chat.id)
 
     if len(m.text.split()) < 2:
-        await m.reply_text(text="Please check help on how to use this this command.")
+        await m.reply_text(text="Пожалуйста, проверьте справку о том, как использовать эту команду.")
         return
 
-    bl_words = ((m.text.split(None, 1)[1]).lower()).split()
+    bl_words = m.text.split()[1:]
     all_blacklisted = db.get_blacklists()
     already_added_words, rep_text = [], ""
 
     for bl_word in bl_words:
-        if bl_word in all_blacklisted:
+        if bl_word.lower() in all_blacklisted:
             already_added_words.append(bl_word)
             continue
-        db.add_blacklist(bl_word)
+        db.add_blacklist(bl_word.lower())
 
     if already_added_words:
         rep_text = (
-            ", ".join([f"<code>{i}</code>" for i in bl_words])
-            + " already added in blacklist, skipped them!"
+            ", ".join([f"<code>{i}</code>" for i in already_added_words])
+            + " уже добавлены в черный список, их пропущено!"
         )
-    LOGGER.info(f"{m.from_user.id} added new blacklists ({bl_words}) in {m.chat.id}")
+    LOGGER.info(f"{m.from_user.id} добавил новые слова в черный список ({bl_words}) в {m.chat.id}")
     trigger = ", ".join(f"<code>{i}</code>" for i in bl_words)
     await m.reply_text(
-        text=f"Added <code>{trigger}</code> in blacklist words!"
+        text=f"Добавлены слова <code>{trigger}</code> в черный список!"
         + (f"\n{rep_text}" if rep_text else ""),
     )
 
